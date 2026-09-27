@@ -1,49 +1,53 @@
 # SupportMind AI
 
-### AI Customer Support Agent with Resolution Memory
+## AI Customer Support Agent with Resolution Memory
 
-SupportMind AI is an AI-powered customer support agent that uses **Hindsight memory** to remember relevant customer experiences and, more importantly, remember **what actually solved a customer's previous problem**.
+SupportMind AI is a memory-first customer support agent that uses **Hindsight** to remember previous customer experiences, successful resolutions, failed troubleshooting attempts, and relevant support history.
 
-Instead of treating every support interaction as a completely new conversation, SupportMind AI can recall verified previous resolutions and use them to provide more relevant support.
+Instead of treating every support conversation as a completely new interaction, SupportMind AI uses relevant past experiences to make the next response more personalized and context-aware.
 
 ---
 
-## 🚀 The Problem
+## The Problem
 
-Traditional AI customer support agents often respond to each interaction independently.
+Traditional AI customer-support agents often treat each conversation independently.
 
 For example:
 
-> A customer reports that their Premium payment failed.
+> Customer: "My payment is failing again."
 
-The support agent suggests a few troubleshooting steps and resolves the issue.
+A generic support agent may provide the same troubleshooting steps every time, even if those steps were already tried unsuccessfully.
 
-Later, the **same customer experiences the same problem again**.
+SupportMind AI addresses this problem by remembering:
 
-A conventional support chatbot may start troubleshooting from the beginning because it does not remember what worked previously.
+- What problem the customer previously experienced
+- What troubleshooting steps were attempted
+- Which approaches failed
+- Which resolution was successfully confirmed
+- The customer's previous support history
+- The type of issue associated with the memory
 
-SupportMind AI addresses this by introducing **Resolution Memory**.
-
-The agent remembers:
-
-- The customer's previous issue
-- What troubleshooting was attempted
-- What failed
-- What successfully resolved the issue
-- Relevant customer/environment information
-- The customer's previous support experience
-
-This allows future interactions to become more personalized and relevant.
+The goal is not simply to remember conversations, but to remember **what actually worked**.
 
 ---
 
-## 🧠 Core Idea: Resolution Memory
+## Key Feature: Resolution Memory
 
-The key idea behind SupportMind AI is:
+The central idea behind SupportMind AI is **Resolution Memory**.
 
-> **Don't just remember what happened. Remember what worked.**
+A successful support interaction can become useful knowledge for a future interaction with the same customer and the same type of problem.
 
-A normal conversation memory might store:
+For example:
 
 ```text
-Customer had a payment problem.
+Previous interaction:
+
+Payment failed while upgrading to Premium
+        ↓
+Cleared payment session
+        ↓
+Started a fresh checkout
+        ↓
+Customer confirmed payment succeeded
+        ↓
+VERIFIED RESOLUTION STORED
