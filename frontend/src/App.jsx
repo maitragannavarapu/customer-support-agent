@@ -65,7 +65,7 @@ function App() {
         }}
       >
         <div>
-          <h1 style={{ margin: 0, fontSize: "24px" }}>
+          <h1 style={{ margin: 0, fontSize: "24px", color: "#ffffff" }}>
             SupportMind AI
           </h1>
 
