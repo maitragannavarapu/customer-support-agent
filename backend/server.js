@@ -14,7 +14,7 @@ app.get("/", (req, res) => {
     });
 });
 
-// Test Hindsight connection
+// Test Hindsight RETAIN
 app.post("/test-hindsight", async (req, res) => {
     try {
         const response = await fetch(
@@ -46,6 +46,41 @@ app.post("/test-hindsight", async (req, res) => {
 
     } catch (error) {
         console.error("Hindsight connection error:", error);
+
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+// Test Hindsight RECALL
+app.post("/test-recall", async (req, res) => {
+    try {
+        const response = await fetch(
+            `${process.env.HINDSIGHT_API_URL}/v1/default/banks/${process.env.HINDSIGHT_BANK_ID}/memories/recall`,
+            {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${process.env.HINDSIGHT_API_KEY}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    query: "What problem did Rahul have when upgrading to Premium?"
+                })
+            }
+        );
+
+        const data = await response.json();
+
+        res.json({
+            success: response.ok,
+            status: response.status,
+            data: data
+        });
+
+    } catch (error) {
+        console.error("Hindsight recall error:", error);
 
         res.status(500).json({
             success: false,
