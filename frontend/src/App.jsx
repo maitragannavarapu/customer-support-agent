@@ -314,6 +314,7 @@ function App() {
                 }}
               >
                 No verified previous resolution found.
+                <br />
                 The agent will respond using the current conversation.
               </div>
             )}
@@ -372,35 +373,131 @@ function App() {
           </section>
         </div>
 
-        {/* Architecture indicator */}
+        {/* Agent Memory Pipeline */}
         <div
           style={{
             marginTop: "25px",
             background: "white",
             borderRadius: "16px",
-            padding: "20px",
+            padding: "25px",
             boxShadow: "0 4px 20px rgba(0,0,0,0.06)",
-            textAlign: "center",
           }}
         >
           <div
             style={{
+              textAlign: "center",
               fontSize: "13px",
               color: "#6b7280",
-              marginBottom: "10px",
+              fontWeight: "bold",
+              letterSpacing: "1px",
+              marginBottom: "20px",
             }}
           >
-            AGENT PIPELINE
+            AGENT MEMORY PIPELINE
           </div>
 
+          {/* Five pipeline stages */}
           <div
             style={{
-              fontWeight: "bold",
-              fontSize: "15px",
-              wordSpacing: "8px",
+              display: "grid",
+              gridTemplateColumns: "repeat(5, minmax(0, 1fr))",
+              gap: "10px",
+              alignItems: "stretch",
             }}
           >
-            Customer → Hindsight Recall → Groq AI → Hindsight Retain
+            {/* Step 1 */}
+            <div
+              style={{
+                padding: "14px 8px",
+                borderRadius: "10px",
+                background: "#f3f4f6",
+                fontWeight: "bold",
+                fontSize: "12px",
+                textAlign: "center",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                minHeight: "48px",
+              }}
+            >
+              1. Customer Issue
+            </div>
+
+            {/* Step 2 */}
+            <div
+              style={{
+                padding: "14px 8px",
+                borderRadius: "10px",
+                background: "#ede9fe",
+                color: "#6d28d9",
+                fontWeight: "bold",
+                fontSize: "12px",
+                textAlign: "center",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                minHeight: "48px",
+              }}
+            >
+              2. Hindsight Recall
+            </div>
+
+            {/* Step 3 */}
+            <div
+              style={{
+                padding: "14px 8px",
+                borderRadius: "10px",
+                background: "#ecfdf5",
+                color: "#047857",
+                fontWeight: "bold",
+                fontSize: "12px",
+                textAlign: "center",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                minHeight: "48px",
+              }}
+            >
+              3. Verified Resolution
+            </div>
+
+            {/* Step 4 */}
+            <div
+              style={{
+                padding: "14px 8px",
+                borderRadius: "10px",
+                background: "#eff6ff",
+                color: "#1d4ed8",
+                fontWeight: "bold",
+                fontSize: "12px",
+                textAlign: "center",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                minHeight: "48px",
+              }}
+            >
+              4. Groq AI Response
+            </div>
+
+            {/* Step 5 */}
+            <div
+              style={{
+                padding: "14px 8px",
+                borderRadius: "10px",
+                background: "#fef3c7",
+                color: "#92400e",
+                fontWeight: "bold",
+                fontSize: "12px",
+                textAlign: "center",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                minHeight: "48px",
+              }}
+            >
+              5. Hindsight Retain
+            </div>
           </div>
         </div>
       </main>

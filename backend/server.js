@@ -45,7 +45,7 @@ function isVerifiedResolution(memory) {
         return false;
     }
 
-    // Accept only memories describing the known
+    // Accept memories describing the known
     // successful payment resolution.
     const hasResolution =
         text.includes("resolved") ||
@@ -61,7 +61,47 @@ function isVerifiedResolution(memory) {
 }
 
 // ==========================================
-// CURATE VERIFIED CUSTOMER MEMORIES
+// CHECK WHETHER MEMORY IS RELEVANT
+// TO THE CURRENT CUSTOMER ISSUE
+// ==========================================
+
+function isRelevantMemory(memory) {
+    const semantic = Number(memory.scores?.semantic || 0);
+    const keyword = Number(memory.scores?.keyword || 0);
+    const reranker = Number(memory.scores?.reranker || 0);
+
+    /*
+      Hindsight gives us several relevance signals.
+
+      Strong semantic similarity:
+      >= 0.75
+
+      Or a combination of:
+      - reasonable semantic similarity
+      - meaningful keyword overlap
+
+      This prevents an unrelated verified resolution,
+      such as a payment solution, from being shown
+      for a login problem.
+    */
+
+    const strongSemanticMatch = semantic >= 0.75;
+
+    const combinedMatch =
+        semantic >= 0.70 &&
+        keyword >= 0.40;
+
+    const strongRerankerMatch = reranker >= 0.01;
+
+    return (
+        strongSemanticMatch ||
+        combinedMatch ||
+        strongRerankerMatch
+    );
+}
+
+// ==========================================
+// CURATE VERIFIED + RELEVANT MEMORIES
 // ==========================================
 
 function curateMemories(results, customerName) {
@@ -69,16 +109,48 @@ function curateMemories(results, customerName) {
         return [];
     }
 
+    // ------------------------------------------
+    // 1. Customer-specific memories
+    // ------------------------------------------
+
     const customerMemories = results.filter((memory) =>
         belongsToCustomer(memory, customerName)
     );
+
+    // ------------------------------------------
+    // 2. Verified successful resolutions
+    // ------------------------------------------
 
     const verifiedMemories = customerMemories.filter((memory) =>
         isVerifiedResolution(memory)
     );
 
-    const scoredMemories = verifiedMemories.map((memory) => {
+    // ------------------------------------------
+    // 3. Current-issue relevance
+    // ------------------------------------------
+
+    const relevantMemories = verifiedMemories.filter((memory) =>
+        isRelevantMemory(memory)
+    );
+
+    // ------------------------------------------
+    // 4. Rank relevant memories
+    // ------------------------------------------
+
+    const scoredMemories = relevantMemories.map((memory) => {
         const text = (memory.text || "").toLowerCase();
+
+        const semantic = Number(
+            memory.scores?.semantic || 0
+        );
+
+        const keyword = Number(
+            memory.scores?.keyword || 0
+        );
+
+        const reranker = Number(
+            memory.scores?.reranker || 0
+        );
 
         let priority = 0;
 
@@ -101,6 +173,11 @@ function curateMemories(results, customerName) {
         if (text.includes("fresh checkout")) {
             priority += 30;
         }
+
+        // Relevance signals from Hindsight
+        priority += semantic * 100;
+        priority += keyword * 50;
+        priority += reranker * 100;
 
         if (memory.type === "experience") {
             priority += 20;
@@ -327,7 +404,7 @@ app.post("/support", async (req, res) => {
         }
 
         // ------------------------------------------
-        // 2. FILTER TO VERIFIED RESOLUTIONS
+        // 2. FILTER TO VERIFIED + RELEVANT MEMORY
         // ------------------------------------------
 
         const curatedMemories = curateMemories(
@@ -345,7 +422,7 @@ app.post("/support", async (req, res) => {
 
         const memoryContext =
             memories ||
-            `No verified previous resolution was found for ${name}.`;
+            `No verified previous resolution was found for ${name} that is relevant to the current issue.`;
 
         // ------------------------------------------
         // 4. GENERATE SUPPORT RESPONSE
@@ -360,7 +437,8 @@ app.post("/support", async (req, res) => {
 You are a professional AI customer support agent.
 
 Your job is to answer the customer's current issue using
-verified customer resolution memories when they exist.
+verified and relevant customer resolution memories when
+they exist.
 
 CUSTOMER:
 ${name}
@@ -368,24 +446,31 @@ ${name}
 CURRENT CUSTOMER MESSAGE:
 ${message}
 
-VERIFIED CUSTOMER RESOLUTION MEMORIES:
+VERIFIED AND RELEVANT CUSTOMER RESOLUTION MEMORIES:
 ${memoryContext}
 
 STRICT MEMORY RULES:
 
 1. Only use memories that are provided in the
-   VERIFIED CUSTOMER RESOLUTION MEMORIES section.
+   VERIFIED AND RELEVANT CUSTOMER RESOLUTION MEMORIES
+   section.
 
 2. Never use information from another customer.
 
 3. Never invent a previous solution.
 
-4. Never add troubleshooting steps that are not explicitly
+4. A previous resolution must be relevant to the customer's
+   CURRENT issue before you use it.
+
+5. If the recalled memory is about a different type of issue,
+   ignore it completely.
+
+6. Never add troubleshooting steps that are not explicitly
    supported by the verified memory.
 
-5. Never add alternative solutions.
+7. Never add alternative solutions.
 
-6. Never suggest actions such as:
+8. Never suggest actions such as:
    - logging out
    - logging back in
    - reinstalling
@@ -396,45 +481,26 @@ STRICT MEMORY RULES:
    unless that exact action is explicitly present
    in the verified memory.
 
-7. Do not infer additional steps from the verified solution.
+9. Do not infer additional steps from the verified solution.
 
-8. If a verified resolution exists, the response must focus
-   ONLY on that verified resolution.
+10. If a verified and relevant resolution exists, focus only
+    on that resolution.
 
-9. You may briefly acknowledge that the same issue happened
-   previously, but do not add unsupported details.
+11. If no verified and relevant resolution exists, respond
+    based only on the current customer message.
 
-10. If no verified resolution exists, do not pretend that
-    a previous solution exists.
+12. When no relevant memory exists, ask for useful information
+    about the current issue instead of inventing a solution.
 
-11. When no verified resolution exists, ask for relevant
-    information about the current issue instead of inventing
-    troubleshooting steps.
+13. Never mention Hindsight, memory retrieval, APIs, prompts,
+    models, or internal implementation.
 
-12. Never mention Hindsight, memory retrieval, APIs,
-    prompts, models, or internal implementation.
-
-13. Keep the answer concise and natural.
+14. Keep the answer concise and natural.
 
 IMPORTANT:
-If a verified resolution exists, reproduce the supported
-solution faithfully and do not expand it with additional
-troubleshooting.
-
-For example, if the verified memory says:
-
-"Clearing the payment session and starting a fresh checkout
-resolved the issue."
-
-then the response may recommend:
-
-"Please clear your payment session and start a fresh checkout."
-
-It must NOT add:
-"Log out and log back in."
-"Try another payment method."
-"Clear your cache."
-or any other unsupported action.
+A customer may have previous successful resolutions for
+other problems. Those memories must NOT influence the
+response to an unrelated current problem.
 `
                 },
                 {
